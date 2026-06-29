@@ -1,267 +1,135 @@
 # URL Shortener Demo
 
-This repository demonstrates the **basic backend routing logic behind a URL shortener**.
+This repository demonstrates the **full-stack logic behind a URL shortener**.
 
-The goal of this demo is **not to provide a complete production-ready application**, but to clearly show **how the core backend routes for a URL shortener work**.
+It includes a modern React frontend built with Vite and Tailwind CSS v4, and an Express Node.js backend.
 
-This project focuses only on two responsibilities:
+The goal of this demo is to clearly show **how the core backend routes work** and how they integrate with a frontend interface.
 
-1. Creating a short URL
-2. Redirecting a short URL to the original link
-
-Everything else such as database setup, server initialization, validation, and deployment is intentionally left for developers to implement themselves.
+This project focuses on two main responsibilities:
+1. Creating a short URL via an API.
+2. Redirecting a short URL to the original link.
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```bash
 URL-Shortener-Demo
 │
-├── .env
-├── shortenURL.js
-└── redirect.js
+├── backend (Node.js & Express)
+│   ├── .env
+│   ├── server.js
+│   ├── models/Url.js
+│   └── routes/
+│       ├── shortenURL.js
+│       └── redirect.js
+│
+└── frontend (React & Vite)
+    ├── .env
+    ├── index.html
+    ├── vite.config.js
+    └── src/
+        ├── App.jsx
+        └── index.css
 ```
 
 ---
 
-# Environment Variables
+## Getting Started
 
-The `.env` file contains placeholders for required environment variables.
+### 1. Backend Setup
 
-```bash
-MONGO_URI=your_mongodb_connection_string
-BASE_URL=http://localhost:5000
-```
+The backend runs on port 4000.
 
-### MONGO_URI
-Connection string for the MongoDB database where URL mappings will be stored.
+1. Navigate to the `backend` folder:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Ensure MongoDB is running on your machine (default port 27017). You can adjust the `MONGO_URI` in `backend/.env` if needed.
+4. Start the server:
+   ```bash
+   node server.js
+   ```
 
-### BASE_URL
-The base domain used when generating shortened URLs.
+### 2. Frontend Setup
 
-Example output:
-```bash
-http://localhost:5000/aZ3xP1
-```
+The frontend runs on port 5173.
+
+1. Navigate to the `frontend` folder:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser to `http://localhost:5173` and enjoy the modern, glassmorphism UI!
 
 ---
 
-# How URL Shorteners Work
+## How It Works
 
-A URL shortener works by **mapping a short code to a long URL**.
+### The Frontend Flow
 
-Example:
+The React frontend provides a beautifully designed interface for users to enter a long URL.
+When submitted, it sends a `POST` request using Axios to the backend `http://localhost:4000/shorten`.
+The backend responds with a short URL (e.g. `http://localhost:4000/aZ3xP1`) which is then displayed to the user with a convenient "Copy" button.
 
-Original URL
-```bash
-https://example.com/blog/how-backend-authentication-works
-```
+### The Backend Flow
 
-Generated short URL
-```bash
-http://localhost:5000/aZ3xP1
-```
+This demo includes **two routes** representing the core functionality of a URL shortener.
 
-Database mapping:
+#### 1. Shorten URL Route (`backend/routes/shortenURL.js`)
+**Route:** `POST /shorten`
+- The frontend sends a request with a long URL.
+- The server generates a unique short code.
+- The mapping is stored in the MongoDB database using Mongoose.
+- The server returns the shortened URL.
+
+#### 2. Redirect Route (`backend/routes/redirect.js`)
+**Route:** `GET /:code`
+- The user opens the shortened link (e.g., `http://localhost:4000/aZ3xP1`).
+- The server extracts the short code from the URL.
+- The database is queried for that code.
+- If found, the server redirects the user's browser to the original URL.
+
+---
+
+## Database Mapping
+
+When a URL is shortened, it creates a database mapping like this:
 
 | shortCode | originalUrl |
 |-----------|-------------|
 | aZ3xP1    | https://example.com/blog/how-backend-authentication-works |
 
-Whenever someone opens the short link, the backend:
+---
 
-1. extracts the short code
-2. finds the corresponding URL in the database
-3. redirects the user to the original link
+## Technologies Used
+
+### Frontend
+- **React**: UI library
+- **Vite**: Build tool and dev server
+- **Tailwind CSS v4**: Utility-first styling (configured seamlessly via `@import "tailwindcss";`)
+- **Axios**: HTTP client
+- **Lucide React**: Beautiful iconography
+
+### Backend
+- **Node.js & Express**: Server framework
+- **MongoDB & Mongoose**: Database and ODM
+- **CORS & Dotenv**: Middleware and environment config
 
 ---
 
-# Backend Routes
-
-This demo includes **two routes** representing the core functionality of a URL shortener.
-
----
-
-## 1. Shorten URL Route
-
-File: `shortenURL.js`
-
-Route:
-```bash
-POST /shorten
-```
-
-### Purpose
-Creates a shortened URL for a provided long URL.
-
-### Flow
-
-1. The frontend sends a request with a long URL.
-2. The server generates a unique short code.
-3. The mapping is stored in the database.
-4. The server returns the shortened URL.
-
-Example request body:
-```bash
-{
-"url": "https://example.com/article"
-}
-```
-
-Example response:
-```bash
-{
-"shortUrl": "http://localhost:5000/aZ3xP1"
-}
-```
-
----
-
-## 2. Redirect Route
-
-File: `redirect.js`
-
-Route:
-```bash
-GET /:code
-```
-
-
-### Purpose
-Redirects users from a short URL to the original long URL.
-
-### Flow
-
-1. The user opens the shortened link.
-2. The server extracts the short code from the URL.
-3. The database is queried for that code.
-4. If found, the server redirects the user to the original URL.
-
-Example:
-
-User visits:
-```bash
-http://localhost:5000/aZ3xP1
-```
-
-Server finds:
-```bash
-aZ3xP1 → https://example.com/article
-```
-
-Server responds with a redirect to the original URL.
-
----
-
-# Frontend to Backend Flow
-
-### Step 1 — User Enters URL
-
-The user enters a long URL in the frontend application.
-
-Example:
-```bash
-https://example.com/very/long/article/link
-```
-
----
-
-### Step 2 — Frontend Sends Request
-
-The frontend sends a POST request to the backend:
-```bash
-POST /shorten
-```
-
-With body:
-```bash
-{
-"url": "https://example.com/very/long/article/link"
-}
-```
-
----
-
-### Step 3 — Backend Generates Short Code
-
-The backend generates a random short code such as:
-```bash
-kT9Lm2
-```
-
----
-
-### Step 4 — Store Mapping
-
-The backend stores the mapping in the database.
-
-Example record:
-```bash
-shortCode: kT9Lm2
-originalUrl: https://example.com/very/long/article/link
-```
-
----
-
-### Step 5 — Return Short Link
-
-The backend returns a shortened URL to the frontend:
-```bash
-http://localhost:5000/kT9Lm2
-```
-
-The frontend can display or copy this link for the user.
-
----
-
-### Step 6 — User Opens Short Link
-
-When someone opens the short link:
-```bash
-http://localhost:5000/kT9Lm2
-```
-
-The request hits the redirect route:
-```bash
-GET /:code
-```
-
----
-
-### Step 7 — Backend Redirects User
-
-The backend finds the original URL associated with the code and redirects the browser to it.
-
-Result:
-
-The user lands on the original page.
-
----
-
-# Purpose of This Demo
-
-This project is designed to help developers understand:
-
-- How URL shorteners work internally
-- How backend routes handle URL creation and redirection
-- How short code to URL mapping works
-
-It intentionally keeps the implementation minimal so developers can expand it themselves.
-
-Possible improvements include:
-
-- URL validation
-- Custom aliases
-- Expiration links
-- Click tracking
-- Analytics
-- Rate limiting
-- Authentication
-- Production deployment
-
----
-
-# License
+## License
 
 This project is intended for **learning and demonstration purposes**.
